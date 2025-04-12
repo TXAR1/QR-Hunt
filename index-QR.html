@@ -2,105 +2,204 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Schnitzel-Jagd</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
             background-color: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
+        
         .container {
+            flex: 1;
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 16px;
             background-color: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
+        
+        @media (min-width: 600px) {
+            .container {
+                max-width: 600px;
+                margin: 20px auto;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+        }
+        
         .screen {
             display: none;
         }
+        
         .active {
             display: block;
         }
+        
         h1 {
             color: #4a4a4a;
             text-align: center;
+            font-size: 24px;
+            margin-top: 0;
+            margin-bottom: 16px;
         }
+        
+        p {
+            margin: 8px 0 16px;
+            text-align: center;
+        }
+        
         .qr-item {
             display: flex;
-            align-items: center;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 5px;
+            flex-direction: column;
+            margin: 12px 0;
+            padding: 16px;
+            border-radius: 12px;
             background-color: #f9f9f9;
-            cursor: pointer;
-            transition: background-color 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
         }
-        .qr-item:hover {
+        
+        .qr-item:active {
             background-color: #f0f0f0;
+            transform: scale(0.98);
         }
+        
+        .qr-header {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        
         .qr-status {
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
             border-radius: 50%;
             margin-right: 15px;
+            border: 2px solid #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
+        
         .found {
             background-color: #4CAF50;
         }
+        
         .not-found {
             background-color: #F44336;
         }
+        
         .qr-name {
             flex-grow: 1;
+            font-weight: bold;
+            font-size: 18px;
         }
+        
         .hint {
             font-style: italic;
             color: #666;
-            margin-top: 5px;
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid #eee;
             display: none;
+            font-size: 16px;
+            line-height: 1.4;
         }
+        
         button {
             background-color: #4CAF50;
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
+            padding: 16px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
             width: 100%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+            margin-top: 16px;
+            -webkit-appearance: none;
         }
-        button:hover {
+        
+        button:active {
             background-color: #45a049;
+            transform: translateY(2px);
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
         }
+        
         input {
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
+            padding: 16px;
+            margin: 16px 0;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            box-sizing: border-box;
+            border-radius: 12px;
+            font-size: 18px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            -webkit-appearance: none;
         }
+        
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
         .progress {
             text-align: center;
-            margin: 20px 0;
-            font-size: 18px;
+            margin: 16px 0;
+            font-size: 20px;
+            font-weight: bold;
+            color: #4a4a4a;
         }
+        
+        .progress-bar {
+            height: 12px;
+            background-color: #f0f0f0;
+            border-radius: 6px;
+            margin: 8px 0 16px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            transition: width 0.5s ease;
+        }
+        
         #scanner-container {
             width: 100%;
-            max-width: 500px;
-            margin: 20px auto;
+            max-width: 100%;
+            margin: 16px auto;
+            aspect-ratio: 1 / 1;
+            max-height: 70vh;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
+        
         .back-button {
             background-color: #666;
-            margin-top: 10px;
         }
+        
+        .scan-instructions {
+            text-align: center;
+            margin: 16px 0;
+            font-size: 16px;
+            color: #666;
+        }
+        
         .confetti {
             position: fixed;
             width: 10px;
@@ -109,12 +208,15 @@
             border-radius: 50%;
             top: -10px;
             animation: fall 3s linear infinite;
+            z-index: 10;
         }
+        
         @keyframes fall {
             to {
                 transform: translateY(100vh);
             }
         }
+        
         .win-message {
             text-align: center;
             font-size: 24px;
@@ -122,10 +224,61 @@
             margin: 20px 0;
             animation: pulse 2s infinite;
         }
+        
         @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            50% { transform: scale(1.05); }
             100% { transform: scale(1); }
+        }
+        
+        .trophy {
+            font-size: 60px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .app-name {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #4CAF50;
+        }
+        
+        .app-tagline {
+            text-align: center;
+            margin-bottom: 24px;
+            color: #666;
+        }
+        
+        .loading-indicator {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0,0,0,0.1);
+            border-left-color: #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -133,10 +286,11 @@
     <div class="container">
         <!-- Start Screen -->
         <div id="start-screen" class="screen active">
-            <h1>Schnitzel-Jagd</h1>
-            <p>Finde alle 5 QR-Codes und gewinne!</p>
-            <input type="text" id="player-name" placeholder="Dein Name">
-            <button id="start-button">Start</button>
+            <div class="app-name">Schnitzel-Jagd</div>
+            <div class="app-tagline">Die QR-Code Schnitzeljagd</div>
+            
+            <input type="text" id="player-name" placeholder="Dein Name" autocomplete="off">
+            <button id="start-button">Auf die Jagd gehen</button>
         </div>
 
         <!-- Main Screen -->
@@ -144,6 +298,9 @@
             <h1>Schnitzel-Jagd</h1>
             <p>Hallo <span id="player-name-display"></span>!</p>
             <div class="progress">Gefunden: <span id="found-count">0</span>/5</div>
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+            </div>
             
             <div id="qr-list">
                 <!-- QR Codes will be inserted here -->
@@ -156,13 +313,18 @@
         <div id="scan-screen" class="screen">
             <h1>QR-Code Scannen</h1>
             <div id="scanner-container"></div>
-            <p>Halte die Kamera vor einen QR-Code</p>
-            <button class="back-button" id="back-from-scan">Zurück</button>
+            <div class="scan-instructions">Halte die Kamera vor einen QR-Code</div>
+            <div id="loading-scanner" class="loading-indicator">
+                <div class="loading-spinner"></div>
+                <div>Kamera wird aktiviert...</div>
+            </div>
+            <button class="back-button" id="back-from-scan">Zurück zur Übersicht</button>
         </div>
 
         <!-- Win Screen -->
         <div id="win-screen" class="screen">
             <h1>Glückwunsch!</h1>
+            <div class="trophy floating">🏆</div>
             <div class="win-message">
                 <p>Du hast alle 5 QR-Codes gefunden!</p>
                 <p><span id="winner-name"></span>, du hast gewonnen!</p>
@@ -220,12 +382,15 @@
         const playerNameDisplay = document.getElementById('player-name-display');
         const winnerNameDisplay = document.getElementById('winner-name');
         const foundCountDisplay = document.getElementById('found-count');
+        const progressFill = document.getElementById('progress-fill');
         const qrListContainer = document.getElementById('qr-list');
         const scannerContainer = document.getElementById('scanner-container');
         const confettiContainer = document.getElementById('confetti-container');
+        const loadingScanner = document.getElementById('loading-scanner');
 
         let html5QrCode;
         let playerName = "";
+        let scannerInitialized = false;
 
         // Initialize QR list
         function initQRList() {
@@ -233,10 +398,20 @@
             qrCodes.forEach(qr => {
                 const qrItem = document.createElement('div');
                 qrItem.className = 'qr-item';
-                qrItem.innerHTML = `
-                    <div class="qr-status ${qr.found ? 'found' : 'not-found'}"></div>
-                    <div class="qr-name">${qr.name}</div>
-                `;
+                
+                const qrHeader = document.createElement('div');
+                qrHeader.className = 'qr-header';
+                
+                const qrStatus = document.createElement('div');
+                qrStatus.className = `qr-status ${qr.found ? 'found' : 'not-found'}`;
+                
+                const qrName = document.createElement('div');
+                qrName.className = 'qr-name';
+                qrName.textContent = qr.name;
+                
+                qrHeader.appendChild(qrStatus);
+                qrHeader.appendChild(qrName);
+                qrItem.appendChild(qrHeader);
                 
                 const hintElement = document.createElement('div');
                 hintElement.className = 'hint';
@@ -260,10 +435,14 @@
             updateFoundCount();
         }
 
-        // Update found count
+        // Update found count and progress bar
         function updateFoundCount() {
             const foundCount = qrCodes.filter(qr => qr.found).length;
             foundCountDisplay.textContent = foundCount;
+            
+            // Update progress bar
+            const progressPercentage = (foundCount / qrCodes.length) * 100;
+            progressFill.style.width = `${progressPercentage}%`;
             
             if (foundCount === qrCodes.length) {
                 setTimeout(showWinScreen, 500);
@@ -272,7 +451,14 @@
 
         // QR Code Scanner
         function startScanner() {
-            html5QrCode = new Html5Qrcode("scanner-container");
+            loadingScanner.style.display = 'block';
+            scannerContainer.style.display = 'none';
+            
+            if (!scannerInitialized) {
+                html5QrCode = new Html5Qrcode("scanner-container");
+                scannerInitialized = true;
+            }
+            
             html5QrCode.start(
                 { facingMode: "environment" },
                 {
@@ -284,7 +470,12 @@
                     // console.error(errorMessage);
                 }
             )
+            .then(() => {
+                loadingScanner.style.display = 'none';
+                scannerContainer.style.display = 'block';
+            })
             .catch((err) => {
+                loadingScanner.style.display = 'none';
                 alert("QR-Scanner konnte nicht gestartet werden. Bitte erlaube den Kamerazugriff.");
                 showMainScreen();
             });
@@ -301,6 +492,10 @@
         }
 
         function onScanSuccess(decodedText) {
+            // Play success sound
+            const successSound = new Audio("data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=");
+            successSound.play();
+            
             // In a real app, you'd check if the scanned code matches any of your expected QR codes
             // For demo purposes, we'll just mark a random unfound QR code as found
             const unfoundCodes = qrCodes.filter(qr => !qr.found);
@@ -308,6 +503,19 @@
                 const randomIndex = Math.floor(Math.random() * unfoundCodes.length);
                 const foundQr = unfoundCodes[randomIndex];
                 foundQr.found = true;
+                
+                // Vibrate if supported
+                if (navigator.vibrate) {
+                    navigator.vibrate(200);
+                }
+                
+                // Show native notification if supported and app is in background
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('Schnitzel-Jagd', {
+                        body: `Du hast ${foundQr.name} gefunden!`,
+                        icon: '/api/placeholder/192/192'
+                    });
+                }
                 
                 alert(`Du hast ${foundQr.name} gefunden!`);
                 stopScanner();
@@ -327,73 +535,13 @@
                 confetti.className = 'confetti';
                 confetti.style.left = `${Math.random() * 100}%`;
                 confetti.style.backgroundColor = getRandomColor();
+                confetti.style.width = `${Math.random() * 10 + 5}px`;
+                confetti.style.height = `${Math.random() * 10 + 5}px`;
+                confetti.style.opacity = Math.random();
                 confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
                 confetti.style.animationDelay = `${Math.random() * 2}s`;
                 confettiContainer.appendChild(confetti);
             }
-        }
-
-        function getRandomColor() {
-            const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
-            return colors[Math.floor(Math.random() * colors.length)];
-        }
-
-        // Screen navigation
-        function showStartScreen() {
-            startScreen.classList.add('active');
-            mainScreen.classList.remove('active');
-            scanScreen.classList.remove('active');
-            winScreen.classList.remove('active');
             
-            // Reset game
-            qrCodes.forEach(qr => qr.found = false);
-            playerNameInput.value = playerName;
-        }
-
-        function showMainScreen() {
-            startScreen.classList.remove('active');
-            mainScreen.classList.add('active');
-            scanScreen.classList.remove('active');
-            winScreen.classList.remove('active');
-            stopScanner();
-        }
-
-        function showScanScreen() {
-            startScreen.classList.remove('active');
-            mainScreen.classList.remove('active');
-            scanScreen.classList.add('active');
-            winScreen.classList.remove('active');
-            startScanner();
-        }
-
-        function showWinScreen() {
-            startScreen.classList.remove('active');
-            mainScreen.classList.remove('active');
-            scanScreen.classList.remove('active');
-            winScreen.classList.add('active');
-            stopScanner();
-            createConfetti();
-        }
-
-        // Event Listeners
-        startButton.addEventListener('click', () => {
-            playerName = playerNameInput.value.trim();
-            if (playerName === "") {
-                alert("Bitte gib deinen Namen ein!");
-                return;
-            }
-            playerNameDisplay.textContent = playerName;
-            winnerNameDisplay.textContent = playerName;
-            initQRList();
-            showMainScreen();
-        });
-
-        scanButton.addEventListener('click', showScanScreen);
-        backFromScanButton.addEventListener('click', showMainScreen);
-        playAgainButton.addEventListener('click', showStartScreen);
-
-        // Initialize
-        showStartScreen();
-    </script>
-</body>
-</html>
+            // Play win sound
+            const winSound = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgo
