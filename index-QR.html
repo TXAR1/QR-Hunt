@@ -545,3 +545,76 @@
             
             // Play win sound
             const winSound = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgo
+
+            // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check for Notification permissions
+            if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+                Notification.requestPermission();
+            }
+            
+            // Initialize QR list
+            initQRList();
+            
+            // Start button click event
+            startButton.addEventListener('click', () => {
+                playerName = playerNameInput.value.trim();
+                if (playerName === '') {
+                    alert('Bitte gib deinen Namen ein!');
+                    return;
+                }
+                
+                // Save player name
+                playerNameDisplay.textContent = playerName;
+                
+                // Reset game state
+                qrCodes.forEach(qr => qr.found = false);
+                initQRList();
+                
+                // Show main screen
+                showMainScreen();
+            });
+            
+            // Scan button click event
+            scanButton.addEventListener('click', () => {
+                showScanScreen();
+            });
+            
+            // Back button click event
+            backFromScanButton.addEventListener('click', () => {
+                stopScanner();
+                showMainScreen();
+            });
+            
+            // Play again button click event
+            playAgainButton.addEventListener('click', () => {
+                // Reset game state
+                qrCodes.forEach(qr => qr.found = false);
+                initQRList();
+                
+                // Go back to start screen
+                showStartScreen();
+                playerNameInput.value = '';
+            });
+        });
+        
+        // Handle page visibility changes to properly manage scanner
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && html5QrCode && html5QrCode.isScanning) {
+                // Stop scanner when app goes to background
+                stopScanner();
+            } else if (!document.hidden && scanScreen.classList.contains('active')) {
+                // Restart scanner when app comes back to foreground and we're on scan screen
+                startScanner();
+            }
+        });
+        
+        // Handle page unload to clean up resources
+        window.addEventListener('beforeunload', () => {
+            if (html5QrCode && html5QrCode.isScanning) {
+                stopScanner();
+            }
+        });
+    </script>
+</body>
+</html>
