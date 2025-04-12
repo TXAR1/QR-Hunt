@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schnitzel-Jagd</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .screen {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+        h1 {
+            color: #4a4a4a;
+            text-align: center;
+        }
+        .qr-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .qr-item:hover {
+            background-color: #f0f0f0;
+        }
+        .qr-status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+        .found {
+            background-color: #4CAF50;
+        }
+        .not-found {
+            background-color: #F44336;
+        }
+        .qr-name {
+            flex-grow: 1;
+        }
+        .hint {
+            font-style: italic;
+            color: #666;
+            margin-top: 5px;
+            display: none;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .progress {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 18px;
+        }
+        #scanner-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 20px auto;
+        }
+        .back-button {
+            background-color: #666;
+            margin-top: 10px;
+        }
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 50%;
+            top: -10px;
+            animation: fall 3s linear infinite;
+        }
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+        .win-message {
+            text-align: center;
+            font-size: 24px;
+            color: #4CAF50;
+            margin: 20px 0;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1>Schnitzel-Jagd</h1>
+            <p>Finde alle 5 QR-Codes und gewinne!</p>
+            <input type="text" id="player-name" placeholder="Dein Name">
+            <button id="start-button">Start</button>
+        </div>
+
+        <!-- Main Screen -->
+        <div id="main-screen" class="screen">
+            <h1>Schnitzel-Jagd</h1>
+            <p>Hallo <span id="player-name-display"></span>!</p>
+            <div class="progress">Gefunden: <span id="found-count">0</span>/5</div>
+            
+            <div id="qr-list">
+                <!-- QR Codes will be inserted here -->
+            </div>
+            
+            <button id="scan-button">QR-Code Scannen</button>
+        </div>
+
+        <!-- Scan Screen -->
+        <div id="scan-screen" class="screen">
+            <h1>QR-Code Scannen</h1>
+            <div id="scanner-container"></div>
+            <p>Halte die Kamera vor einen QR-Code</p>
+            <button class="back-button" id="back-from-scan">Zurück</button>
+        </div>
+
+        <!-- Win Screen -->
+        <div id="win-screen" class="screen">
+            <h1>Glückwunsch!</h1>
+            <div class="win-message">
+                <p>Du hast alle 5 QR-Codes gefunden!</p>
+                <p><span id="winner-name"></span>, du hast gewonnen!</p>
+            </div>
+            <div id="confetti-container"></div>
+            <button id="play-again">Nochmal spielen</button>
+        </div>
+    </div>
+
+    <script>
+        // QR Codes configuration
+        const qrCodes = [
+            {
+                id: "qr1",
+                name: "QR-Code 1",
+                found: false,
+                hint: "Suche in der Nähe des Haupteingangs."
+            },
+            {
+                id: "qr2",
+                name: "QR-Code 2",
+                found: false,
+                hint: "In der Cafeteria unter einem der Tische."
+            },
+            {
+                id: "qr3",
+                name: "QR-Code 3",
+                found: false,
+                hint: "Im Bücherregal, zwischen den Sachbüchern."
+            },
+            {
+                id: "qr4",
+                name: "QR-Code 4",
+                found: false,
+                hint: "Auf der Rückseite des Informationsschilds."
+            },
+            {
+                id: "qr5",
+                name: "QR-Code 5",
+                found: false,
+                hint: "Im Garten hinter dem großen Baum."
+            }
+        ];
+
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const mainScreen = document.getElementById('main-screen');
+        const scanScreen = document.getElementById('scan-screen');
+        const winScreen = document.getElementById('win-screen');
+        const startButton = document.getElementById('start-button');
+        const scanButton = document.getElementById('scan-button');
+        const backFromScanButton = document.getElementById('back-from-scan');
+        const playAgainButton = document.getElementById('play-again');
+        const playerNameInput = document.getElementById('player-name');
+        const playerNameDisplay = document.getElementById('player-name-display');
+        const winnerNameDisplay = document.getElementById('winner-name');
+        const foundCountDisplay = document.getElementById('found-count');
+        const qrListContainer = document.getElementById('qr-list');
+        const scannerContainer = document.getElementById('scanner-container');
+        const confettiContainer = document.getElementById('confetti-container');
+
+        let html5QrCode;
+        let playerName = "";
+
+        // Initialize QR list
+        function initQRList() {
+            qrListContainer.innerHTML = '';
+            qrCodes.forEach(qr => {
+                const qrItem = document.createElement('div');
+                qrItem.className = 'qr-item';
+                qrItem.innerHTML = `
+                    <div class="qr-status ${qr.found ? 'found' : 'not-found'}"></div>
+                    <div class="qr-name">${qr.name}</div>
+                `;
+                
+                const hintElement = document.createElement('div');
+                hintElement.className = 'hint';
+                hintElement.textContent = qr.hint;
+                qrItem.appendChild(hintElement);
+                
+                // Show/hide hint when clicked
+                qrItem.addEventListener('click', () => {
+                    if (!qr.found) {
+                        if (hintElement.style.display === 'block') {
+                            hintElement.style.display = 'none';
+                        } else {
+                            hintElement.style.display = 'block';
+                        }
+                    }
+                });
+                
+                qrListContainer.appendChild(qrItem);
+            });
+            
+            updateFoundCount();
+        }
+
+        // Update found count
+        function updateFoundCount() {
+            const foundCount = qrCodes.filter(qr => qr.found).length;
+            foundCountDisplay.textContent = foundCount;
+            
+            if (foundCount === qrCodes.length) {
+                setTimeout(showWinScreen, 500);
+            }
+        }
+
+        // QR Code Scanner
+        function startScanner() {
+            html5QrCode = new Html5Qrcode("scanner-container");
+            html5QrCode.start(
+                { facingMode: "environment" },
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                onScanSuccess,
+                (errorMessage) => {
+                    // console.error(errorMessage);
+                }
+            )
+            .catch((err) => {
+                alert("QR-Scanner konnte nicht gestartet werden. Bitte erlaube den Kamerazugriff.");
+                showMainScreen();
+            });
+        }
+
+        function stopScanner() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    // Scanner stopped
+                }).catch((err) => {
+                    console.error("Failed to stop scanner:", err);
+                });
+            }
+        }
+
+        function onScanSuccess(decodedText) {
+            // In a real app, you'd check if the scanned code matches any of your expected QR codes
+            // For demo purposes, we'll just mark a random unfound QR code as found
+            const unfoundCodes = qrCodes.filter(qr => !qr.found);
+            if (unfoundCodes.length > 0) {
+                const randomIndex = Math.floor(Math.random() * unfoundCodes.length);
+                const foundQr = unfoundCodes[randomIndex];
+                foundQr.found = true;
+                
+                alert(`Du hast ${foundQr.name} gefunden!`);
+                stopScanner();
+                showMainScreen();
+                initQRList();
+            } else {
+                alert("Alle QR-Codes wurden bereits gefunden!");
+                stopScanner();
+                showMainScreen();
+            }
+        }
+
+        // Create confetti effect
+        function createConfetti() {
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.backgroundColor = getRandomColor();
+                confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                confetti.style.animationDelay = `${Math.random() * 2}s`;
+                confettiContainer.appendChild(confetti);
+            }
+        }
+
+        function getRandomColor() {
+            const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // Screen navigation
+        function showStartScreen() {
+            startScreen.classList.add('active');
+            mainScreen.classList.remove('active');
+            scanScreen.classList.remove('active');
+            winScreen.classList.remove('active');
+            
+            // Reset game
+            qrCodes.forEach(qr => qr.found = false);
+            playerNameInput.value = playerName;
+        }
+
+        function showMainScreen() {
+            startScreen.classList.remove('active');
+            mainScreen.classList.add('active');
+            scanScreen.classList.remove('active');
+            winScreen.classList.remove('active');
+            stopScanner();
+        }
+
+        function showScanScreen() {
+            startScreen.classList.remove('active');
+            mainScreen.classList.remove('active');
+            scanScreen.classList.add('active');
+            winScreen.classList.remove('active');
+            startScanner();
+        }
+
+        function showWinScreen() {
+            startScreen.classList.remove('active');
+            mainScreen.classList.remove('active');
+            scanScreen.classList.remove('active');
+            winScreen.classList.add('active');
+            stopScanner();
+            createConfetti();
+        }
+
+        // Event Listeners
+        startButton.addEventListener('click', () => {
+            playerName = playerNameInput.value.trim();
+            if (playerName === "") {
+                alert("Bitte gib deinen Namen ein!");
+                return;
+            }
+            playerNameDisplay.textContent = playerName;
+            winnerNameDisplay.textContent = playerName;
+            initQRList();
+            showMainScreen();
+        });
+
+        scanButton.addEventListener('click', showScanScreen);
+        backFromScanButton.addEventListener('click', showMainScreen);
+        playAgainButton.addEventListener('click', showStartScreen);
+
+        // Initialize
+        showStartScreen();
+    </script>
+</body>
+</html>
